@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroMath — Sleek Math Practice</title>
+  <meta name="description" content="A simple, clean, and highly responsive math practice application designed for speed and simplicity.">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Aurora Background Blobs -->
+  <div class="aurora-blob aurora-1"></div>
+  <div class="aurora-blob aurora-2"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">AeroMath</div>
+      <button id="settings-toggle" class="icon-button" aria-label="Toggle Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </header>
+
+    <!-- Main Practice Card -->
+    <main class="main-card">
+      <!-- Question Section -->
+      <section class="question-container">
+        <div id="question-display" class="question-text">Ready?</div>
+      </section>
+
+      <!-- Input Section -->
+      <section class="input-container">
+        <input 
+          type="number" 
+          id="answer-input" 
+          placeholder="Type answer..." 
+          autocomplete="off" 
+          inputmode="numeric"
+          autofocus
+        />
+      </section>
+
+      <!-- Stats Bar -->
+      <section class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-label">Correct</span>
+          <span id="stat-correct" class="stat-value">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-label">Incorrect</span>
+          <span id="stat-incorrect" class="stat-value">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-label">Accuracy</span>
+          <span id="stat-accuracy" class="stat-value">0%</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- Settings Overlay -->
+    <div id="settings-overlay" class="overlay hidden">
+      <div class="settings-modal">
+        <div class="modal-header">
+          <h2>Practice Settings</h2>
+          <button id="settings-close" class="icon-button" aria-label="Close Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="modal-content">
+          <!-- First Number Range -->
+          <div class="setting-group">
+            <span class="setting-group-title">First Number Range</span>
+            <div class="range-sliders">
+              <div class="slider-wrapper">
+                <div class="setting-label-row">
+                  <label for="slider-min1">Min</label>
+                  <span id="val-min1" class="badge">1</span>
+                </div>
+                <input type="range" id="slider-min1" min="1" max="20" value="1" class="custom-slider">
+              </div>
+              <div class="slider-wrapper">
+                <div class="setting-label-row">
+                  <label for="slider-max1">Max</label>
+                  <span id="val-max1" class="badge">10</span>
+                </div>
+                <input type="range" id="slider-max1" min="1" max="20" value="10" class="custom-slider">
+              </div>
+            </div>
+          </div>
+
+          <!-- Second Number Range -->
+          <div class="setting-group">
+            <span class="setting-group-title">Second Number Range</span>
+            <div class="range-sliders">
+              <div class="slider-wrapper">
+                <div class="setting-label-row">
+                  <label for="slider-min2">Min</label>
+                  <span id="val-min2" class="badge">1</span>
+                </div>
+                <input type="range" id="slider-min2" min="1" max="20" value="1" class="custom-slider">
+              </div>
+              <div class="slider-wrapper">
+                <div class="setting-label-row">
+                  <label for="slider-max2">Max</label>
+                  <span id="val-max2" class="badge">10</span>
+                </div>
+                <input type="range" id="slider-max2" min="1" max="20" value="10" class="custom-slider">
+              </div>
+            </div>
+          </div>
+
+          <!-- Operations -->
+          <div class="setting-group">
+            <span class="setting-label-row">Operations</span>
+            <div class="operation-grid">
+              <button class="op-button active" data-op="+">
+                <span class="op-symbol">+</span>
+                <span class="op-name">Addition</span>
+              </button>
+              <button class="op-button active" data-op="-">
+                <span class="op-symbol">−</span>
+                <span class="op-name">Subtraction</span>
+              </button>
+              <button class="op-button active" data-op="*">
+                <span class="op-symbol">×</span>
+                <span class="op-name">Multiplication</span>
+              </button>
+              <button class="op-button active" data-op="/">
+                <span class="op-symbol">÷</span>
+                <span class="op-name">Division</span>
+              </button>
+            </div>
+            <span id="op-error-message" class="error-text hidden">Select at least one operation!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
