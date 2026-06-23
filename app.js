@@ -8,7 +8,8 @@ let state = {
   correctCount: 0,
   incorrectCount: 0,
   currentQuestion: null,
-  isCorrectAnimating: false
+  isCorrectAnimating: false,
+  pool: []
 };
 
 // DOM Elements
@@ -97,6 +98,87 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// Shuffle array using Fisher-Yates algorithm
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Generate pool of all unique questions for current settings
+function generateQuestionPool() {
+  const pool = [];
+  
+  for (const op of state.operations) {
+    let opAdded = 0;
+    for (let num1 = state.min1; num1 <= state.max1; num1++) {
+      for (let num2 = state.min2; num2 <= state.max2; num2++) {
+        if (op === '/') {
+          if (num2 !== 0 && num1 % num2 === 0) {
+            pool.push({ num1, num2, opSymbol: op });
+            opAdded++;
+          }
+        } else {
+          pool.push({ num1, num2, opSymbol: op });
+          opAdded++;
+        }
+      }
+    }
+    
+    // Division fallback if no division pairs exist in range but division is selected
+    if (op === '/' && opAdded === 0) {
+      for (let i = 0; i < 10; i++) {
+        const num2 = getRandomInt(state.min2, state.max2);
+        const k = Math.max(1, Math.round(state.min1 / num2));
+        const num1 = num2 * k;
+        pool.push({ num1, num2, opSymbol: op });
+      }
+    }
+  }
+  
+  return pool;
+}
+
+// Initialize the question pool from localStorage or regenerate
+function initPool(forceRegen = false) {
+  if (!forceRegen) {
+    const savedPool = localStorage.getItem('math_pool');
+    if (savedPool) {
+      try {
+        state.pool = JSON.parse(savedPool);
+        if (Array.isArray(state.pool) && state.pool.length > 0) {
+          updatePoolCounter();
+          return;
+        }
+      } catch (e) {
+        console.error('Failed to parse saved pool', e);
+      }
+    }
+  }
+
+  // Generate new shuffled pool
+  const rawPool = generateQuestionPool();
+  state.pool = shuffleArray(rawPool);
+  savePool();
+  updatePoolCounter();
+}
+
+// Save current pool to localStorage
+function savePool() {
+  localStorage.setItem('math_pool', JSON.stringify(state.pool));
+}
+
+// Update the DOM pool counter
+function updatePoolCounter() {
+  const poolCounter = document.getElementById('pool-counter');
+  if (poolCounter) {
+    poolCounter.textContent = `${state.pool.length} left`;
+  }
+}
+
 // Generate a new math question
 function generateQuestion() {
   if (state.operations.length === 0) {
@@ -104,62 +186,42 @@ function generateQuestion() {
     return;
   }
 
-  // Pick a random operation from the active ones
-  const opSymbol = state.operations[Math.floor(Math.random() * state.operations.length)];
-  let num1, num2, answer, displaySymbol;
+  // Initialize pool if empty or missing
+  if (!state.pool || state.pool.length === 0) {
+    initPool(true);
+    // Visual reset indicator
+    const poolCounter = document.getElementById('pool-counter');
+    if (poolCounter) {
+      poolCounter.classList.remove('pool-reset-anim');
+      void poolCounter.offsetWidth; // Trigger reflow
+      poolCounter.classList.add('pool-reset-anim');
+    }
+  }
+
+  // Pop next unique question
+  const q = state.pool.pop();
+  savePool();
+  updatePoolCounter();
+
+  let num1 = q.num1;
+  let num2 = q.num2;
+  let opSymbol = q.opSymbol;
+  let answer, displaySymbol;
 
   switch (opSymbol) {
     case '+':
-      num1 = getRandomInt(state.min1, state.max1);
-      num2 = getRandomInt(state.min2, state.max2);
       answer = num1 + num2;
       displaySymbol = '+';
       break;
     case '-':
-      num1 = getRandomInt(state.min1, state.max1);
-      num2 = getRandomInt(state.min2, state.max2);
       answer = num1 - num2;
       displaySymbol = '−'; // Clean minus sign
       break;
     case '*':
-      num1 = getRandomInt(state.min1, state.max1);
-      num2 = getRandomInt(state.min2, state.max2);
       answer = num1 * num2;
       displaySymbol = '×'; // Multiplication cross
       break;
     case '/':
-      // Division rule: only whole numbers, no division by zero.
-      // To ensure even distribution of divisors (num2), we:
-      // 1. Group valid multiples (num1) for each candidate divisor (num2) in the range.
-      // 2. Select a divisor uniformly at random from those that have at least one valid multiple.
-      // 3. Select a multiple (num1) uniformly at random for that divisor.
-      const validDivisors = [];
-      const multiplesMap = {};
-      
-      for (let b = state.min2; b <= state.max2; b++) {
-        const multiples = [];
-        for (let a = state.min1; a <= state.max1; a++) {
-          if (a % b === 0) {
-            multiples.push(a);
-          }
-        }
-        if (multiples.length > 0) {
-          validDivisors.push(b);
-          multiplesMap[b] = multiples;
-        }
-      }
-
-      if (validDivisors.length > 0) {
-        num2 = validDivisors[Math.floor(Math.random() * validDivisors.length)];
-        const possibleMultiples = multiplesMap[num2];
-        num1 = possibleMultiples[Math.floor(Math.random() * possibleMultiples.length)];
-      } else {
-        // Fallback if there are no exact pairs (e.g. ranges don't match cleanly):
-        // Pick a random b in range, and multiply it by a factor close to min1
-        num2 = getRandomInt(state.min2, state.max2);
-        let k = Math.max(1, Math.round(state.min1 / num2));
-        num1 = num2 * k;
-      }
       answer = num1 / num2;
       displaySymbol = '÷';
       break;
@@ -265,6 +327,7 @@ sliderMin1.addEventListener('input', () => {
   
   resetStats();
   saveSettings();
+  initPool(true);
   generateQuestion();
 });
 
@@ -282,6 +345,7 @@ sliderMax1.addEventListener('input', () => {
   
   resetStats();
   saveSettings();
+  initPool(true);
   generateQuestion();
 });
 
@@ -299,6 +363,7 @@ sliderMin2.addEventListener('input', () => {
   
   resetStats();
   saveSettings();
+  initPool(true);
   generateQuestion();
 });
 
@@ -316,6 +381,7 @@ sliderMax2.addEventListener('input', () => {
   
   resetStats();
   saveSettings();
+  initPool(true);
   generateQuestion();
 });
 
@@ -348,6 +414,7 @@ opButtons.forEach(btn => {
     
     resetStats();
     saveSettings();
+    initPool(true);
     generateQuestion();
   });
 });
@@ -387,6 +454,7 @@ document.addEventListener('keydown', (e) => {
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
+  initPool(false);
   generateQuestion();
   answerInput.focus();
   
