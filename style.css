@@ -90,6 +90,11 @@ body {
   height: 60px;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .logo {
   font-family: var(--font-display);
   font-weight: 800;

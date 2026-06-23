@@ -20,6 +20,7 @@ const statIncorrect = document.getElementById('stat-incorrect');
 const statAccuracy = document.getElementById('stat-accuracy');
 
 const settingsToggle = document.getElementById('settings-toggle');
+const resetBtn = document.getElementById('reset-btn');
 const settingsOverlay = document.getElementById('settings-overlay');
 const settingsClose = document.getElementById('settings-close');
 
@@ -448,6 +449,22 @@ document.addEventListener('keydown', (e) => {
     } else {
       closeSettings();
     }
+  }
+});
+
+// Reset Button Event Listener
+resetBtn.addEventListener('click', () => {
+  resetStats();
+  initPool(true);
+  generateQuestion();
+  answerInput.value = '';
+  answerInput.focus();
+  
+  const poolCounter = document.getElementById('pool-counter');
+  if (poolCounter) {
+    poolCounter.classList.remove('pool-reset-anim');
+    void poolCounter.offsetWidth;
+    poolCounter.classList.add('pool-reset-anim');
   }
 });
 
